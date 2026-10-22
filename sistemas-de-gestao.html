@@ -439,6 +439,18 @@ dialog.nd::backdrop{background:rgba(6,14,30,.62)}
 .cmp th:first-child,.cmp td:first-child{text-align:left;color:var(--on-dark-soft)}
 .cmp thead th{color:var(--amber);font-size:13px}
 .ok{color:var(--amber);font-weight:700}.nok{color:#5E7393}
+.m4c{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.m4c article{background:#fff;border:1px solid #D9DFE6;border-top:4px solid var(--ink);border-radius:16px;padding:22px 20px;display:grid;gap:10px;align-content:start;transition:transform .25s,box-shadow .25s}
+.m4c article:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(15,35,71,.10)}
+.m4c article.d{border-top-color:var(--amber)}
+.m4c b{font:800 40px/1 var(--display);font-stretch:118%;color:var(--ink)}
+.m4c article.d b{color:var(--amber-ink)}
+.m4c h3{font-size:19px}
+.m4c p{font-size:15px;line-height:1.5;color:var(--ink-soft)}
+.m4c .ex{border-top:1px solid #E6EAEF;padding-top:10px;color:var(--ink);font-size:14px}
+.m4c .ex span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--amber-ink);margin-bottom:4px;text-transform:uppercase}
+@media (max-width:1000px){.m4c{grid-template-columns:repeat(2,1fr)}.m4c article.d{grid-column:1/-1}}
+@media (max-width:560px){.m4c{grid-template-columns:1fr}}
 .m4{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:8px}
 .m4 div{border:1.5px dashed #AAB6C3;border-radius:16px;padding:22px;background:#fff;display:grid;gap:8px;align-content:start}
 .m4 b{font:800 44px/1 var(--display);font-stretch:118%;color:var(--ink)}
@@ -555,7 +567,7 @@ dialog#privacidade::backdrop{background:rgba(6,14,30,.6)}
 </section>
 
 <nav class="subnav" aria-label="Navegação da área de Sistemas de Gestão"><div class="wrap">
-  <a href="#normas">Implantação ISO</a><a href="#normas" data-filter="g:Qualidade">Gestão da Qualidade (SGQ)</a><a href="#planos">SGI</a><a href="#m4c1d">Metodologia 4C1D</a><a href="#jornada">Diagnóstico e auditorias</a><a href="#ferramentas">Ferramentas da qualidade</a><a href="#industria">Processos, PCP e produtividade</a><a href="#indicadores">Indicadores e dashboards</a><a href="#ferramentas" data-cat="c4">Treinamentos</a><a href="#planos">Planos de implantação</a><a href="#cases">Cases</a><a href="#contato">Solicitar diagnóstico</a>
+  <a href="#normas">Implantação ISO</a><a href="#normas" data-filter="g:Qualidade">Gestão da Qualidade (SGQ)</a><a href="#planos">SGI</a><a href="#m4c1d">Abordagem 4C1D</a><a href="#jornada">Diagnóstico e auditorias</a><a href="#ferramentas">Ferramentas da qualidade</a><a href="#industria">Processos, PCP e produtividade</a><a href="#indicadores">Indicadores e dashboards</a><a href="#ferramentas" data-cat="c4">Treinamentos</a><a href="#planos">Planos de implantação</a><a href="#cases">Cases</a><a href="#contato">Solicitar diagnóstico</a>
 </div></nav>
 
 <section id="normas">
@@ -637,15 +649,31 @@ dialog#privacidade::backdrop{background:rgba(6,14,30,.6)}
 
 <section id="m4c1d">
   <div class="wrap">
-    <div class="sec-head"><p class="kicker">Metodologia própria</p><h2>Metodologia 4C1D</h2>
-    <p class="lead">Metodologia própria da Accountability Consulting para tratar problemas e conduzir a execução das ações, conectada ao SGQ, ao SGI, ao PDCA, às auditorias e à melhoria contínua. O detalhamento de cada etapa será publicado em breve.</p></div>
-    <div class="m4" aria-label="Estrutura da metodologia 4C1D"><div><b>C</b><span>Etapa 1</span></div><div><b>C</b><span>Etapa 2</span></div><div><b>C</b><span>Etapa 3</span></div><div><b>C</b><span>Etapa 4</span></div><div><b>D</b><span>Etapa 5</span></div></div>
-    <div class="uses">
-      <div><b>Reuniões</b>Estrutura para conduzir reuniões de análise e decisão.</div>
-      <div><b>Planos de ação</b>Ações com responsável, prazo e verificação.</div>
-      <div><b>Tratamento de problemas</b>Do registro à causa e à ação eficaz.</div>
-      <div><b>Integração</b>Conectada a SGQ, SGI, PDCA e auditorias.</div>
+    <div class="sec-head"><p class="kicker">Abordagem de implantação</p><h2>4C1D: pessoas preparadas e processos documentados</h2>
+    <p class="lead">Quatro "C" para preparar as pessoas e um "D" para padronizar o processo. A Accountability aplica o 4C1D integrado ao diagnóstico de lacunas, ao mapeamento de processos, aos indicadores, à gestão de riscos e às auditorias internas.</p></div>
+    <div class="m4c" aria-label="As cinco dimensões do 4C1D">
+      <article><b>C</b><h3>Competência</h3><p>Capacitar os colaboradores para executar corretamente suas atividades.</p><p class="ex"><span>Exemplo</span>Treinar operadores na inspeção de fios, regulagem de máquinas e identificação de defeitos.</p></article>
+      <article><b>C</b><h3>Comunicação</h3><p>Garantir que as informações cheguem às pessoas certas, no momento certo.</p><p class="ex"><span>Exemplo</span>Comunicar alterações de especificação, parâmetros de produção e requisitos de qualidade entre PCP, produção e laboratório.</p></article>
+      <article><b>C</b><h3>Conscientização</h3><p>Fazer cada colaborador entender sua responsabilidade e o impacto do seu trabalho na qualidade.</p><p class="ex"><span>Exemplo</span>O operador compreender que misturar lotes de fios compromete a rastreabilidade e gera reclamações de clientes.</p></article>
+      <article><b>C</b><h3>Cultura</h3><p>Incorporar a qualidade à rotina e ao comportamento de toda a organização, não só do departamento da qualidade.</p><p class="ex"><span>Exemplo</span>Colaboradores registrarem desvios, seguirem os padrões e sugerirem melhorias continuamente.</p></article>
+      <article class="d"><b>D</b><h3>Documentação</h3><p>Criar e manter as informações documentadas que orientam o trabalho, controlam as atividades e demonstram conformidade.</p><p class="ex"><span>Exemplo</span>Instruções de trabalho, procedimentos, registros de inspeção, formulários e controle de revisões.</p></article>
     </div>
+    <h3 style="margin:44px 0 14px;font-size:22px">Na prática: implantação da ISO 9001 em uma indústria de fios</h3>
+    <div class="ind-table" role="region" aria-label="Aplicação do 4C1D" tabindex="0" style="margin-top:0"><table><thead><tr><th>Dimensão</th><th>Ação prática</th><th>Evidência de implementação</th></tr></thead><tbody>
+      <tr><td><b>Competência</b></td><td>Treinar operadores e inspetores</td><td>Matriz de competências e avaliação de eficácia</td></tr>
+      <tr><td><b>Comunicação</b></td><td>Definir como as informações circulam entre setores</td><td>Registros de comunicação e reuniões</td></tr>
+      <tr><td><b>Conscientização</b></td><td>Explicar política, objetivos e impacto dos desvios</td><td>Treinamentos e avaliações de entendimento</td></tr>
+      <tr><td><b>Cultura</b></td><td>Integrar a qualidade à rotina de gestão</td><td>Indicadores, auditorias e ações de melhoria</td></tr>
+      <tr><td><b>Documentação</b></td><td>Padronizar os processos críticos</td><td>Procedimentos, instruções e registros controlados</td></tr>
+    </tbody></table></div>
+    <p class="statement" style="font-size:clamp(20px,2.2vw,26px);margin-top:36px;max-width:62ch">A documentação deve apoiar a execução real do processo, e não existir apenas para o auditor. O tamanho dos documentos acompanha a complexidade da operação, o porte da empresa e a competência das pessoas.</p>
+    <div class="uses">
+      <div><b>Diagnóstico de lacunas</b>Requisitos da ISO 9001 avaliados antes de agir.</div>
+      <div><b>Processos e responsabilidades</b>Mapeamento e matriz RACI.</div>
+      <div><b>Competências e treinamento</b>Matriz de competências e plano anual.</div>
+      <div><b>Gestão da rotina</b>Indicadores, riscos, não conformidades e auditorias internas.</div>
+    </div>
+    <p class="disclaimer">O 4C1D é uma abordagem de apoio difundida na gestão da qualidade (referência: Blog da Qualidade). Não é um requisito formal nem uma cláusula da ISO 9001: a empresa pode usá-lo para estruturar a implantação, mas precisa atender aos requisitos aplicáveis da norma.</p>
   </div>
 </section>
 
