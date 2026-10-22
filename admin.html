@@ -119,6 +119,7 @@ td select{min-width:140px;padding:6px 8px}
       <div class="panel"><h2>Navegadores</h2><div class="bars" id="b-br"></div></div>
       <div class="panel"><h2>Região aproximada (fuso horário)</h2><div class="bars" id="b-tz"></div></div>
       <div class="panel"><h2>Botões mais clicados</h2><div class="bars" id="b-cta"></div></div>
+      <div class="panel"><h2>Páginas mais acessadas</h2><div class="bars" id="b-page"></div></div>
     </div>
     <div class="grid2">
       <div class="panel"><h2>Horários de maior acesso</h2><div id="c-hour"></div></div>
@@ -151,7 +152,7 @@ td select{min-width:140px;padding:6px 8px}
 <script>
 const CFG={apiKey:"AIzaSyCz6doMlBOjEQ76XtOlbmPM9Jfr_ud5_cM",db:"https://site-accoutability-default-rtdb.firebaseio.com"};
 const STATUS=["NOVO","EM ANÁLISE","CONTATADO","NEGOCIAÇÃO","CONVERTIDO","ARQUIVADO"];
-const SEC={home:"Home",desafios:"O problema",sobre:"Sobre",jonas:"Jonas Machado",trajetoria:"Trajetória",perspectivas:"Perspectivas",proposito:"Propósito",servicos:"Serviços",metodologia:"Metodologia",tecnologia:"Tecnologia",cases:"Cases",sistemas:"Sistemas",clientes:"Clientes",transformacao:"Antes e depois",porque:"Por que Accountability",contato:"Contato"};
+const SEC={home:"Home",desafios:"O problema",sobre:"Sobre",jonas:"Jonas Machado",trajetoria:"Trajetória",perspectivas:"Perspectivas",proposito:"Propósito",servicos:"Serviços",metodologia:"Metodologia",tecnologia:"Tecnologia",cases:"Cases",sistemas:"Sistemas",clientes:"Clientes",transformacao:"Antes e depois",porque:"Por que Accountability",contato:"Contato","sistemas-gestao":"Sistemas de Gestão (chamada)",topo:"SG · Abertura",normas:"SG · Normas ISO",planos:"SG · Planos",m4c1d:"SG · Metodologia 4C1D",ferramentas:"SG · Ferramentas",industria:"SG · Indústria",jornada:"SG · Jornada",indicadores:"SG · Indicadores",diferenciais:"SG · Diferenciais"};
 const EV={view:"Visita",section:"Seção vista",cta:"Clique",leave:"Saída",lead:"Lead enviado"};
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let auth=null,events=[],leads=[];
@@ -211,7 +212,8 @@ function render(){
   // horas
   const hv=Array(24).fill(0);views.forEach(e=>hv[new Date(e.t).getHours()]++);col($("#c-hour"),hv.map((_,i)=>i+"h"),hv);
   const cnt=(arr,f)=>arr.reduce((m,e)=>{const k=f(e);if(k)m[k]=(m[k]||0)+1;return m},{});
-  bars($("#b-sec"),cnt(ev.filter(e=>e.type==="section"),e=>e.sec),10,k=>SEC[k]||k);
+  bars($("#b-sec"),cnt(ev.filter(e=>e.type==="section"),e=>(e.page==="sistemas-de-gestao"&&(e.sec==="cases"||e.sec==="contato")?"sg-"+e.sec:e.sec)),12,k=>SEC[k]||(k.startsWith("sg-")?"SG · "+(SEC[k.slice(3)]||k):k));
+  bars($("#b-page"),cnt(views,e=>e.page||"inicio"),5,k=>({inicio:"Página inicial","sistemas-de-gestao":"Sistemas de Gestão"}[k]||k));
   bars($("#b-ref"),cnt(views,e=>e.ref));bars($("#b-dev"),cnt(views,e=>e.dev),5,k=>({desktop:"Computador",mobile:"Celular",tablet:"Tablet"}[k]||k));
   bars($("#b-br"),cnt(views,e=>e.br));bars($("#b-tz"),cnt(views,e=>region(e.tz)));bars($("#b-cta"),cnt(ev.filter(e=>e.type==="cta"),e=>e.label));
   renderLeads();renderHist();
