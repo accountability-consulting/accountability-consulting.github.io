@@ -330,6 +330,9 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-bet
 .media-bg>.mbg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;opacity:.28;transform:translateY(var(--py,0));will-change:transform}
 .media-bg>.mbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--steel) 0%,rgba(11,29,58,.55) 35%,rgba(11,29,58,.55) 65%,var(--steel) 100%)}
 .media-bg>.wrap{position:relative;z-index:1}
+.hero-play{position:absolute;right:max(20px,env(safe-area-inset-right,0px));bottom:24px;z-index:3;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid rgba(231,236,242,.35);background:rgba(6,14,28,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#E7ECF2;font:600 13px/1 var(--body);cursor:pointer}
+.hero-play:hover{border-color:var(--amber)}
+.hero-play svg{width:14px;height:14px;fill:currentColor}
 /* A.C.T.I.O.N. sequencial */
 .method.seq .step{position:relative;border-top-color:#C9D2DC;opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease;transition-delay:calc(var(--i)*.22s)}
 .method.seq .step::before{content:"";position:absolute;left:0;top:-4px;height:4px;width:100%;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .6s ease;transition-delay:calc(var(--i)*.22s + .2s)}
@@ -344,7 +347,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-bet
 .manifesto p.in{opacity:1;transform:none}
 .manifesto p b{color:var(--amber);font-weight:800}
 .manifesto small{display:block;margin-top:28px;color:var(--on-dark-soft);font-size:16px}
-@media (prefers-reduced-motion:reduce){.hero-media video{display:none}.method.seq .step{opacity:1;transform:none}.method.seq .step::before{transform:scaleX(1)}.manifesto p{opacity:1;transform:none}.media-bg>.mbg{transform:none}}
+@media (prefers-reduced-motion:reduce){.hero-media video{animation:none;transform:none}.method.seq .step{opacity:1;transform:none}.method.seq .step::before{transform:scaleX(1)}.manifesto p{opacity:1;transform:none}.media-bg>.mbg{transform:none}}
 /* ===== Trajetória (v2) ===== */
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
 .reveal.in{opacity:1;transform:none}
@@ -464,6 +467,7 @@ dialog#privacidade::backdrop{background:rgba(6,14,30,.6)}
 <!-- HOME -->
 <section class="hero dark" id="home">
   <div class="hero-media" aria-hidden="true"><video id="hero-video" muted playsinline loop preload="none" poster="media/accountability-hero-poster.jpg"></video></div>
+  <button class="hero-play" id="hero-play" type="button" aria-pressed="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path id="hero-play-ico" d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg><span id="hero-play-txt">Pausar vídeo</span></button>
   <div class="wrap hero-grid">
     <div>
       <p class="kicker">Accountability Consulting</p>
@@ -1072,18 +1076,29 @@ const CONFIG = {
   /* ===== v4: vídeo de fundo, fundos de mídia, A.C.T.I.O.N. e manifesto ===== */
   (function(){
     const rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const v=document.getElementById("hero-video");
-    if(v&&!rm){
+    const v=document.getElementById("hero-video"),btn=document.getElementById("hero-play");
+    let loaded=false,userPaused=false;
+    function setBtn(playing){if(!btn)return;btn.hidden=false;btn.setAttribute("aria-pressed",String(!playing));
+      document.getElementById("hero-play-txt").textContent=playing?"Pausar vídeo":"Reproduzir vídeo";
+      document.getElementById("hero-play-ico").setAttribute("d",playing?"M6 4h4v16H6zM14 4h4v16h-4z":"M7 4l13 8-13 8z")}
+    function loadVideo(){if(loaded||!v)return;loaded=true;
       const c=navigator.connection||{};const slow=c.saveData||/(^|-)2g|3g/.test(c.effectiveType||"");
       const w=Math.max(innerWidth,innerHeight)*(devicePixelRatio>1.5?1.25:1);
+      const webm=v.canPlayType('video/webm; codecs="vp9"')==="probably";
       const add=(src,type)=>{const so=document.createElement("source");so.src=src;so.type=type;v.appendChild(so)};
-      if(slow||innerWidth<=480){add("media/accountability-hero-compacto-540.mp4","video/mp4");add("media/accountability-hero-compacto-540.webm","video/webm")}
-      else if(innerWidth<=1024||w<1400){add("media/accountability-hero-720.mp4","video/mp4");add("media/accountability-hero-720.webm","video/webm")}
-      else{add("media/accountability-hero-1080.webm","video/webm");add("media/accountability-hero-1080.mp4","video/mp4")}
-      v.preload="auto";v.load();
-      v.addEventListener("canplay",()=>{v.classList.add("ready");v.play().catch(()=>{})},{once:true});
-      const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){v.play().catch(()=>{})}else{v.pause()}}),{threshold:.05});
-      io.observe(v);document.addEventListener("visibilitychange",()=>{if(document.hidden)v.pause();else if(v.getBoundingClientRect().bottom>0)v.play().catch(()=>{})});
+      const pick=(base)=>{if(webm)add(base+".webm","video/webm");add(base+".mp4","video/mp4")};
+      if(slow||innerWidth<=480)pick("media/accountability-hero-compacto-540");
+      else if(innerWidth<=1024||w<1400)pick("media/accountability-hero-720");
+      else pick("media/accountability-hero-1080");
+      v.muted=true;v.defaultMuted=true;v.setAttribute("muted","");v.preload="auto";v.load();
+      v.addEventListener("loadeddata",()=>v.classList.add("ready"),{once:true})}
+    function play(){loadVideo();v.classList.add("ready");const p=v.play();if(p&&p.then)p.then(()=>setBtn(true)).catch(()=>setBtn(false));else setBtn(true)}
+    if(v){
+      if(!rm){play()}else{setBtn(false)}
+      if(btn)btn.addEventListener("click",()=>{if(v.paused){userPaused=false;play()}else{userPaused=true;v.pause();setBtn(false)}});
+      const io=new IntersectionObserver(es=>es.forEach(e=>{if(!loaded||userPaused)return;if(e.isIntersecting){v.play().catch(()=>{})}else{v.pause()}}),{threshold:.05});
+      io.observe(v);
+      document.addEventListener("visibilitychange",()=>{if(!loaded||userPaused)return;if(document.hidden)v.pause();else if(v.getBoundingClientRect().bottom>0)v.play().catch(()=>{})});
     }
     /* fundos estáticos com lazy loading e parallax suave */
     const bgs=[...document.querySelectorAll(".mbg[data-bg]")];
