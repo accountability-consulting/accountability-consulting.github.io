@@ -313,6 +313,38 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-bet
 .nav-links a,.nav-cta{white-space:nowrap}
 @media (min-width:1021px) and (max-width:1500px){.nav-links a{padding:10px 7px;font-size:14px}}
 @media (min-width:1021px) and (max-width:1300px){.nav-cta.desk{display:none}}
+
+/* ===== Experiência visual (v4) — módulo de mídia ===== */
+.hero-media{position:absolute;inset:0;z-index:0;overflow:hidden;background:#060E1C url("media/accountability-hero-poster.jpg") center/cover no-repeat}
+@media (max-width:768px){.hero-media{background-image:url("media/accountability-hero-poster-mobile.jpg")}}
+.hero-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;transform:scale(1.04);animation:heroZoom 30s ease-in-out infinite alternate}
+.hero-media video.ready{opacity:1}
+@keyframes heroZoom{to{transform:scale(1.1)}}
+.hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,14,28,.92) 0%,rgba(6,14,28,.78) 38%,rgba(6,14,28,.35) 70%,rgba(6,14,28,.55) 100%),linear-gradient(0deg,rgba(11,29,58,1) 0%,rgba(11,29,58,0) 28%)}
+@media (max-width:768px){.hero-media::after{background:linear-gradient(180deg,rgba(6,14,28,.7) 0%,rgba(6,14,28,.85) 60%,rgba(11,29,58,1) 100%)}}
+.hero::before{z-index:1}
+.hero>.wrap{position:relative;z-index:2}
+.concept{margin-top:22px;font:600 clamp(15px,1.3vw,17px)/1.5 var(--body);color:var(--on-dark-soft);letter-spacing:.01em}
+.concept b{color:var(--amber);font-weight:600}
+.media-bg{position:relative;overflow:hidden}
+.media-bg>.mbg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;opacity:.28;transform:translateY(var(--py,0));will-change:transform}
+.media-bg>.mbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--steel) 0%,rgba(11,29,58,.55) 35%,rgba(11,29,58,.55) 65%,var(--steel) 100%)}
+.media-bg>.wrap{position:relative;z-index:1}
+/* A.C.T.I.O.N. sequencial */
+.method.seq .step{position:relative;border-top-color:#C9D2DC;opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease;transition-delay:calc(var(--i)*.22s)}
+.method.seq .step::before{content:"";position:absolute;left:0;top:-4px;height:4px;width:100%;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .6s ease;transition-delay:calc(var(--i)*.22s + .2s)}
+.method.seq .step:last-child::before{background:var(--amber)}
+.method.seq.in .step{opacity:1;transform:none}
+.method.seq.in .step::before{transform:scaleX(1)}
+.method.seq .step .L{transition:color .4s;transition-delay:calc(var(--i)*.22s + .3s)}
+/* manifesto */
+.manifesto{background:#060E1C;color:var(--on-dark);padding:clamp(64px,9vw,112px) 0}
+.manifesto .rows{display:grid;gap:6px}
+.manifesto p{font:800 clamp(28px,4.6vw,58px)/1.1 var(--display);font-stretch:112%;opacity:.18;transition:opacity .6s ease,transform .6s ease;transform:translateX(-12px)}
+.manifesto p.in{opacity:1;transform:none}
+.manifesto p b{color:var(--amber);font-weight:800}
+.manifesto small{display:block;margin-top:28px;color:var(--on-dark-soft);font-size:16px}
+@media (prefers-reduced-motion:reduce){.hero-media video{display:none}.method.seq .step{opacity:1;transform:none}.method.seq .step::before{transform:scaleX(1)}.manifesto p{opacity:1;transform:none}.media-bg>.mbg{transform:none}}
 /* ===== Trajetória (v2) ===== */
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
 .reveal.in{opacity:1;transform:none}
@@ -431,11 +463,13 @@ dialog#privacidade::backdrop{background:rgba(6,14,30,.6)}
 <main>
 <!-- HOME -->
 <section class="hero dark" id="home">
+  <div class="hero-media" aria-hidden="true"><video id="hero-video" muted playsinline loop preload="none" poster="media/accountability-hero-poster.jpg"></video></div>
   <div class="wrap hero-grid">
     <div>
       <p class="kicker">Accountability Consulting</p>
       <h1>Engenharia, gestão, tecnologia e inteligência para transformar negócios.</h1>
       <p class="lead">Entramos em operações complexas, identificamos onde estão os gargalos, estruturamos processos, implantamos e integramos sistemas e desenvolvemos as pessoas que vão sustentar o resultado.</p>
+      <p class="concept">Da complexidade à inteligência. <b>Da estratégia à execução.</b> Da execução aos resultados.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#contato">Quero transformar minha operação</a>
         <a class="btn btn-ghost" href="#cases">Conhecer os cases</a>
@@ -699,7 +733,7 @@ dialog#privacidade::backdrop{background:rgba(6,14,30,.6)}
       <h2>Metodologia A.C.T.I.O.N.</h2>
       <p class="lead">Seis etapas que levam a operação do diagnóstico ao número. Cada etapa tem entregáveis próprios e é acompanhada em PMO.</p>
     </div>
-    <div class="method">
+    <div class="method seq" id="method-seq">
       <div class="step"><span class="L">A</span><b>Assessment</b><i>Diagnóstico</i><p>Imersão na operação, dados, gargalos e riscos.</p></div>
       <div class="step"><span class="L">C</span><b>Conception</b><i>Desenho da solução</i><p>Processo futuro, layout, papéis e plano de implantação.</p></div>
       <div class="step"><span class="L">T</span><b>Technology</b><i>Tecnologia e integração</i><p>ERP, WMS, SAP, etiquetas, sistemas e integrações.</p></div>
@@ -712,7 +746,8 @@ dialog#privacidade::backdrop{background:rgba(6,14,30,.6)}
 </section>
 
 <!-- TECNOLOGIA -->
-<section class="dark" id="tecnologia">
+<section class="dark media-bg" id="tecnologia">
+  <div class="mbg" aria-hidden="true" data-bg="media/accountability-frame-tecnologia.jpg"></div>
   <div class="wrap">
     <div class="sec-head">
       <p class="kicker">Tecnologia aplicada</p>
@@ -892,8 +927,18 @@ dialog#privacidade::backdrop{background:rgba(6,14,30,.6)}
   </div>
 </section>
 
+<section class="manifesto" aria-label="Manifesto Accountability Consulting">
+  <div class="wrap rows">
+    <p>Estratégia para <b>direcionar.</b></p>
+    <p>Tecnologia para <b>conectar.</b></p>
+    <p>Execução para <b>transformar.</b></p>
+    <p>Resultados para <b>evoluir.</b></p>
+    <small>Accountability Consulting · Engenharia, gestão, tecnologia e inteligência</small>
+  </div>
+</section>
 <!-- CONTATO -->
-<section class="dark" id="contato">
+<section class="dark media-bg" id="contato">
+  <div class="mbg" aria-hidden="true" data-bg="media/accountability-frame-resultados.jpg"></div>
   <div class="wrap contact">
     <div>
       <p class="kicker">Vamos conversar</p>
@@ -1022,6 +1067,38 @@ const CONFIG = {
   const dlg=$("#privacidade");
   ["#open-priv","#open-priv2"].forEach(id=>{const b=$(id);if(b)b.addEventListener("click",()=>{if(dlg.showModal)dlg.showModal();else dlg.setAttribute("open","")})});
   $("#close-priv").addEventListener("click",()=>dlg.close());
+
+
+  /* ===== v4: vídeo de fundo, fundos de mídia, A.C.T.I.O.N. e manifesto ===== */
+  (function(){
+    const rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const v=document.getElementById("hero-video");
+    if(v&&!rm){
+      const c=navigator.connection||{};const slow=c.saveData||/(^|-)2g|3g/.test(c.effectiveType||"");
+      const w=Math.max(innerWidth,innerHeight)*(devicePixelRatio>1.5?1.25:1);
+      const add=(src,type)=>{const so=document.createElement("source");so.src=src;so.type=type;v.appendChild(so)};
+      if(slow||innerWidth<=480){add("media/accountability-hero-compacto-540.mp4","video/mp4");add("media/accountability-hero-compacto-540.webm","video/webm")}
+      else if(innerWidth<=1024||w<1400){add("media/accountability-hero-720.mp4","video/mp4");add("media/accountability-hero-720.webm","video/webm")}
+      else{add("media/accountability-hero-1080.webm","video/webm");add("media/accountability-hero-1080.mp4","video/mp4")}
+      v.preload="auto";v.load();
+      v.addEventListener("canplay",()=>{v.classList.add("ready");v.play().catch(()=>{})},{once:true});
+      const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){v.play().catch(()=>{})}else{v.pause()}}),{threshold:.05});
+      io.observe(v);document.addEventListener("visibilitychange",()=>{if(document.hidden)v.pause();else if(v.getBoundingClientRect().bottom>0)v.play().catch(()=>{})});
+    }
+    /* fundos estáticos com lazy loading e parallax suave */
+    const bgs=[...document.querySelectorAll(".mbg[data-bg]")];
+    const lio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.style.backgroundImage="url('"+e.target.dataset.bg+"')";lio.unobserve(e.target)}}),{rootMargin:"300px"});
+    bgs.forEach(b=>lio.observe(b));
+    if(!rm){let tick=false;addEventListener("scroll",()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{bgs.forEach(b=>{const r=b.parentElement.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight){b.style.setProperty("--py",((r.top+r.height/2-innerHeight/2)*-0.08).toFixed(1)+"px")}});tick=false})},{passive:true})}
+    /* A.C.T.I.O.N. em sequência */
+    const m=document.getElementById("method-seq");
+    if(m){[...m.querySelectorAll(".step")].forEach((s,i)=>s.style.setProperty("--i",i));
+      new IntersectionObserver((es,o)=>es.forEach(e=>{if(e.isIntersecting){m.classList.add("in");o.disconnect()}}),{threshold:.3}).observe(m)}
+    /* manifesto linha a linha */
+    const mp=[...document.querySelectorAll(".manifesto p")];
+    const mio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in")}}),{rootMargin:"0px 0px -25% 0px"});
+    mp.forEach(p=>mio.observe(p));
+  })();
 
   /* form */
   const form=$("#lead"), status=$("#status");
