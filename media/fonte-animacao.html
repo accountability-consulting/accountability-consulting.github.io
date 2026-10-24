@@ -1,0 +1,189 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#060E1C}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script>
+/* Accountability Consulting — vídeo de fundo procedural.
+   draw(t) é determinístico e periódico: draw(0) === draw(T). */
+const T=30, W=1920, H=1080;
+const C=document.getElementById("c"), x=C.getContext("2d");
+const NAVY="#0B1D3A", CYAN="#38C6F4", GREEN="#7DBA35", STEEL="#7FA8CF", LINE="rgba(127,168,207,";
+const TAU=Math.PI*2;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const ease=v=>v<.5?2*v*v:1-Math.pow(-2*v+2,2)/2;
+// janela de cena com fade (s0..s1), com wrap no loop
+function env(t,s0,s1,f=1.2){
+  const tr=v=>clamp((v-(s0-f/2))/f)*clamp(((s1+f/2)-v)/f);
+  return Math.max(tr(t),tr(t-T),tr(t+T));
+}
+// rng determinístico
+function rng(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+// projeção isométrica
+const ISO={x:Math.cos(Math.PI/6),y:Math.sin(Math.PI/6)};
+function iso(px,py,pz,ox,oy,s){return[ox+(px-py)*ISO.x*s, oy+(px+py)*ISO.y*s-pz*s]}
+
+function background(t){
+  const g=x.createRadialGradient(W*.5+Math.sin(t/T*TAU)*120,H*.35,80,W*.5,H*.5,W*.75);
+  g.addColorStop(0,"#11284F");g.addColorStop(.55,"#0A1A35");g.addColorStop(1,"#050C18");
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+}
+function floorGrid(t,alpha,ox,oy,s){
+  x.save();x.globalAlpha=alpha*.55;x.strokeStyle=LINE+"0.18)";x.lineWidth=1;
+  for(let i=-14;i<=14;i++){
+    let a=iso(i,-14,0,ox,oy,s),b=iso(i,14,0,ox,oy,s);x.beginPath();x.moveTo(...a);x.lineTo(...b);x.stroke();
+    a=iso(-14,i,0,ox,oy,s);b=iso(14,i,0,ox,oy,s);x.beginPath();x.moveTo(...a);x.lineTo(...b);x.stroke();
+  }x.restore();
+}
+function isoBox(px,py,pz,w,d,h,ox,oy,s,stroke,fill,glow){
+  const P=(a,b,c)=>iso(px+a,py+b,pz+c,ox,oy,s);
+  const top=[P(0,0,h),P(w,0,h),P(w,d,h),P(0,d,h)],left=[P(0,d,0),P(w,d,0),P(w,d,h),P(0,d,h)],right=[P(w,0,0),P(w,d,0),P(w,d,h),P(w,0,h)];
+  [[left,.55],[right,.75],[top,1]].forEach(([f,k])=>{x.beginPath();f.forEach((p,i)=>i?x.lineTo(...p):x.moveTo(...p));x.closePath();
+    x.fillStyle=fill.replace("K",(k*.9).toFixed(2));x.fill();x.strokeStyle=stroke;x.lineWidth=1.4;if(glow){x.shadowColor=stroke;x.shadowBlur=glow}x.stroke();x.shadowBlur=0});
+}
+// ---------- CENA 1/2/5: fábrica isométrica ----------
+const machines=[[-6,-3,2,2,1.6],[-2,-3,2.4,2,2.2],[2.5,-3,2,2,1.4],[-6,2,2,2,1.2],[-1.5,2.4,3,1.6,1],[3.5,2,2,2.4,2.6]];
+const racks=[[7,-6],[7,-4],[7,-2],[7,0]];
+function factory(t,a,linkA,ox,oy,s){
+  if(a<=0)return;x.save();x.globalAlpha=a;
+  floorGrid(t,1,ox,oy,s);
+  // esteira
+  const y0=.5;for(let k=0;k<2;k++){const yy=y0+k*.6;const p1=iso(-9,yy,.35,ox,oy,s),p2=iso(9,yy,.35,ox,oy,s);x.strokeStyle=LINE+"0.45)";x.lineWidth=2;x.beginPath();x.moveTo(...p1);x.lineTo(...p2);x.stroke()}
+  // caixas na esteira (período T/3)
+  for(let i=0;i<9;i++){const u=((t/(T/3)+i/9)%1);const px=-9+u*18;isoBox(px,.55,.35,.55,.45,.45,ox,oy,s,"rgba(125,186,53,.85)","rgba(125,186,53,K)".replace("K","0.18"),0)}
+  // máquinas
+  machines.forEach((m,i)=>{const pulse=.5+.5*Math.sin(t/T*TAU*6+i);isoBox(m[0],m[1],0,m[2],m[3],m[4],ox,oy,s,`rgba(127,168,207,${.55+.25*pulse})`,"rgba(22,40,77,K)",0);
+    const c=iso(m[0]+m[2]/2,m[1]+m[3]/2,m[4]+.15,ox,oy,s);x.fillStyle=`rgba(56,198,244,${.35+.5*pulse})`;x.beginPath();x.arc(c[0],c[1],3.5,0,TAU);x.fill()});
+  // braço robótico
+  const base=iso(0.5,-.2,0,ox,oy,s);const ang=-1.2+.6*Math.sin(t/T*TAU*5),ang2=.9+.5*Math.sin(t/T*TAU*5+1.3);
+  const L1=s*1.4,L2=s*1.1;const j1=[base[0]+Math.cos(ang)*L1,base[1]+Math.sin(ang)*L1-s*.6];const j2=[j1[0]+Math.cos(ang+ang2)*L2,j1[1]+Math.sin(ang+ang2)*L2];
+  x.strokeStyle="rgba(231,236,242,.85)";x.lineWidth=7;x.lineCap="round";x.beginPath();x.moveTo(base[0],base[1]-s*.6);x.lineTo(...j1);x.lineTo(...j2);x.stroke();
+  x.fillStyle=CYAN;[j1,j2].forEach(p=>{x.beginPath();x.arc(p[0],p[1],6,0,TAU);x.fill()});
+  // racks / armazém
+  racks.forEach((r,i)=>{for(let lv=0;lv<3;lv++)isoBox(r[0],r[1],lv*.9,1.2,1.6,.08,ox,oy,s,"rgba(127,168,207,.55)","rgba(22,40,77,K)",0);
+    for(let lv=0;lv<3;lv++){if((i+lv)%2)isoBox(r[0]+.2,r[1]+.3,lv*.9+.08,.7,.9,.6,ox,oy,s,"rgba(125,186,53,.6)","rgba(125,186,53,K)".replace("K","0.12"),0)}});
+  // empilhadeira/AGV em loop
+  const u=(t/(T/2))%1;const path=[[-8,5],[6,5],[6,7],[-8,7]];const seg=u*4,si=Math.floor(seg),f=seg-si;const p=path[si],q=path[(si+1)%4];
+  isoBox(p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f,0,.9,.6,.4,ox,oy,s,CYAN,"rgba(56,198,244,K)".replace("K","0.18"),8);
+  // camada de links (cena 2)
+  if(linkA>0){x.save();x.globalAlpha=a*linkA;
+    const nodes=machines.map(m=>iso(m[0]+m[2]/2,m[1]+m[3]/2,m[4]+2.4,ox,oy,s));
+    const tops=machines.map(m=>iso(m[0]+m[2]/2,m[1]+m[3]/2,m[4]+.15,ox,oy,s));
+    nodes.forEach((n,i)=>{x.strokeStyle="rgba(56,198,244,.35)";x.setLineDash([4,6]);x.beginPath();x.moveTo(...tops[i]);x.lineTo(...n);x.stroke();x.setLineDash([])});
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){if((i+j)%2&&j-i>2)continue;
+      const A=nodes[i],B=nodes[j];x.strokeStyle="rgba(56,198,244,.5)";x.lineWidth=1.4;x.beginPath();x.moveTo(...A);x.lineTo(...B);x.stroke();
+      const k=((t/(T/6))+i*.13+j*.07)%1;const P=[A[0]+(B[0]-A[0])*k,A[1]+(B[1]-A[1])*k];x.fillStyle="#BFF0FF";x.shadowColor=CYAN;x.shadowBlur=14;x.beginPath();x.arc(P[0],P[1],3,0,TAU);x.fill();x.shadowBlur=0}
+    nodes.forEach((n,i)=>{const r=10+3*Math.sin(t/T*TAU*4+i);x.strokeStyle=CYAN;x.lineWidth=2;x.beginPath();x.arc(n[0],n[1],r,0,TAU);x.stroke();x.fillStyle="rgba(56,198,244,.25)";x.fill()});
+    x.restore()}
+  x.restore();
+}
+// ---------- CENA 3: processos, PCP, gantt ----------
+function processScene(t,a,lt){
+  if(a<=0)return;x.save();x.globalAlpha=a;
+  const cx=W/2, cy=H*.42;const n=7;const gap=210;const sx=cx-gap*3;
+  // nós do fluxo
+  for(let i=0;i<n;i++){const px=sx+i*gap,py=cy+Math.sin(i*1.3)*40;
+    if(i<n-1){const qx=sx+(i+1)*gap,qy=cy+Math.sin((i+1)*1.3)*40;const k=clamp(lt*1.3-i*.12);
+      x.strokeStyle="rgba(127,168,207,.35)";x.lineWidth=2;x.beginPath();x.moveTo(px,py);x.lineTo(qx,qy);x.stroke();
+      x.strokeStyle=GREEN;x.lineWidth=3;x.beginPath();x.moveTo(px,py);x.lineTo(px+(qx-px)*k,py+(qy-py)*k);x.stroke();
+      const m=((t/(T/10))+i*.2)%1;x.fillStyle="#E7FFD0";x.shadowColor=GREEN;x.shadowBlur=12;x.beginPath();x.arc(px+(qx-px)*m,py+(qy-py)*m,3.5,0,TAU);x.fill();x.shadowBlur=0}
+    const on=clamp(lt*1.3-i*.12+.1);x.fillStyle=`rgba(17,40,79,${.9})`;x.strokeStyle=on>.5?GREEN:"rgba(127,168,207,.6)";x.lineWidth=2.5;
+    x.beginPath();x.roundRect(px-46,py-30,92,60,12);x.fill();x.stroke();
+    // ícone simples dentro
+    x.strokeStyle="rgba(231,236,242,.8)";x.lineWidth=2;x.beginPath();
+    if(i%3==0){x.rect(px-14,py-12,28,24)}else if(i%3==1){x.moveTo(px-16,py+10);x.lineTo(px-4,py-4);x.lineTo(px+4,py+4);x.lineTo(px+16,py-10)}else{x.arc(px,py,12,0,TAU)}x.stroke();
+  }
+  // gantt / PCP
+  const gx=W*.2,gy=H*.66,gw=W*.6;
+  for(let r=0;r<5;r++){x.fillStyle="rgba(127,168,207,.12)";x.fillRect(gx,gy+r*34,gw,22);
+    const st=(r*.13+.05),len=.18+((r*37)%5)*.06;const grow=clamp((lt-.15-r*.08)*2.2);
+    x.fillStyle=r==2?CYAN:"rgba(125,186,53,.85)";x.fillRect(gx+gw*st,gy+r*34,gw*len*grow,22)}
+  // linha do "hoje"
+  const tx=gx+gw*(.25+.5*((t/(T/2))%1));x.strokeStyle="rgba(231,236,242,.55)";x.setLineDash([5,5]);x.beginPath();x.moveTo(tx,gy-14);x.lineTo(tx,gy+5*34);x.stroke();x.setLineDash([]);
+  // capacidade (barras verticais)
+  const bx=W*.84,by=H*.88;for(let i=0;i<5;i++){const h=(80+((i*53)%90))*clamp((lt-.2)*2);x.fillStyle=i==3?"rgba(56,198,244,.9)":"rgba(127,168,207,.45)";x.fillRect(bx+i*22,by-h,14,h)}
+  x.restore();
+}
+// ---------- CENA 4: integração ----------
+const sats=[["db",0],["rack",1],["cart",2],["chart",3],["ai",4],["qr",5]];
+function glyph(k,px,py){x.strokeStyle="rgba(231,236,242,.9)";x.lineWidth=2.4;x.beginPath();
+  if(k=="db"){x.ellipse(px,py-12,16,6,0,0,TAU);x.moveTo(px-16,py-12);x.lineTo(px-16,py+12);x.ellipse(px,py+12,16,6,0,0,Math.PI);x.moveTo(px+16,py+12);x.lineTo(px+16,py-12)}
+  if(k=="rack"){x.rect(px-16,py-18,32,36);x.moveTo(px-16,py-6);x.lineTo(px+16,py-6);x.moveTo(px-16,py+6);x.lineTo(px+16,py+6)}
+  if(k=="cart"){x.moveTo(px-20,py-14);x.lineTo(px-12,py-14);x.lineTo(px-6,py+8);x.lineTo(px+16,py+8);x.lineTo(px+20,py-8);x.lineTo(px-9,py-8);x.moveTo(px-2,py+16);x.arc(px-4,py+16,3,0,TAU);x.moveTo(px+16,py+16);x.arc(px+14,py+16,3,0,TAU)}
+  if(k=="chart"){x.moveTo(px-18,py+16);x.lineTo(px+18,py+16);x.rect(px-14,py,7,16);x.rect(px-3,py-8,7,24);x.rect(px+8,py-16,7,32)}
+  if(k=="ai"){for(let i=0;i<3;i++)for(let j=0;j<2;j++){x.moveTo(px-12+12*i+3,py-8+16*j);x.arc(px-12+12*i,py-8+16*j,3,0,TAU)}x.moveTo(px-12,py-8);x.lineTo(px,py+8);x.lineTo(px+12,py-8);x.moveTo(px-12,py+8);x.lineTo(px,py-8);x.lineTo(px+12,py+8)}
+  if(k=="qr"){x.rect(px-16,py-16,12,12);x.rect(px+4,py-16,12,12);x.rect(px-16,py+4,12,12);x.rect(px+6,py+6,4,4);x.rect(px+12,py+12,4,4)}
+  x.stroke()}
+function integrationScene(t,a,lt){
+  if(a<=0)return;x.save();x.globalAlpha=a;
+  const cx=W/2,cy=H/2,R=300+20*Math.sin(t/T*TAU);
+  for(let k=0;k<3;k++){x.strokeStyle=`rgba(56,198,244,${.12+.06*k})`;x.lineWidth=1.2;x.beginPath();x.arc(cx,cy,90+k*95,0,TAU);x.stroke()}
+  const rot=t/T*TAU*.5;
+  const P=sats.map(([k],i)=>{const an=rot+i/6*TAU;return[cx+Math.cos(an)*R*1.25,cy+Math.sin(an)*R*.78,k]});
+  // conexões satélite-centro e entre vizinhos
+  P.forEach((p,i)=>{const q=P[(i+1)%6];x.strokeStyle="rgba(127,168,207,.28)";x.lineWidth=1.2;x.beginPath();x.moveTo(p[0],p[1]);x.lineTo(q[0],q[1]);x.stroke();
+    const g=x.createLinearGradient(p[0],p[1],cx,cy);g.addColorStop(0,"rgba(56,198,244,.65)");g.addColorStop(1,"rgba(125,186,53,.65)");x.strokeStyle=g;x.lineWidth=2;x.beginPath();x.moveTo(p[0],p[1]);x.lineTo(cx,cy);x.stroke();
+    for(let m=0;m<2;m++){const u=((t/(T/10))+i*.17+m*.5)%1;const dir=m?u:1-u;x.fillStyle=m?"#E7FFD0":"#BFF0FF";x.shadowColor=m?GREEN:CYAN;x.shadowBlur=14;x.beginPath();x.arc(p[0]+(cx-p[0])*dir,p[1]+(cy-p[1])*dir,4,0,TAU);x.fill();x.shadowBlur=0}});
+  P.forEach(p=>{x.fillStyle="rgba(17,40,79,.95)";x.strokeStyle=CYAN;x.lineWidth=2;x.beginPath();x.arc(p[0],p[1],44,0,TAU);x.fill();x.stroke();glyph(p[2],p[0],p[1])});
+  // núcleo
+  const pulse=.5+.5*Math.sin(t/T*TAU*6);const g=x.createRadialGradient(cx,cy,10,cx,cy,120);g.addColorStop(0,`rgba(125,186,53,${.55+.3*pulse})`);g.addColorStop(1,"rgba(125,186,53,0)");x.fillStyle=g;x.beginPath();x.arc(cx,cy,120,0,TAU);x.fill();
+  x.fillStyle=NAVY;x.strokeStyle=GREEN;x.lineWidth=3;x.beginPath();x.arc(cx,cy,58,0,TAU);x.fill();x.stroke();
+  // marca abstrata (barras ascendentes)
+  x.fillStyle=GREEN;[[-22,10,12],[-6,0,22],[10,-12,34]].forEach(([dx,dy,h])=>x.fillRect(cx+dx,cy+16-h,11,h));
+  x.restore();
+}
+// ---------- CENA 5: pessoas ----------
+function person(px,py,sc,col){x.fillStyle=col;x.beginPath();x.arc(px,py-38*sc,13*sc,0,TAU);x.fill();x.beginPath();x.roundRect(px-20*sc,py-22*sc,40*sc,46*sc,[18*sc,18*sc,6*sc,6*sc]);x.fill()}
+function peopleScene(t,a,lt){
+  if(a<=0)return;x.save();x.globalAlpha=a;
+  const cx=W/2,cy=H*.6;
+  // mesa / painel central
+  x.fillStyle="rgba(17,40,79,.95)";x.strokeStyle="rgba(56,198,244,.7)";x.lineWidth=2;x.beginPath();x.roundRect(cx-260,cy-260,520,250,18);x.fill();x.stroke();
+  // mini dashboard
+  for(let i=0;i<8;i++){const h=40+60*(.5+.5*Math.sin(i*1.7+t/T*TAU*2));x.fillStyle=i==5?CYAN:"rgba(125,186,53,.85)";x.fillRect(cx-220+i*36,cy-40-h,22,h)}
+  x.strokeStyle="#E7ECF2";x.lineWidth=3;x.beginPath();for(let i=0;i<=20;i++){const px=cx+40+i*9,py=cy-150-40*Math.sin(i*.35+t/T*TAU)*clamp(lt*2);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+  // pessoas ao redor
+  const ppl=[[-420,40,1.1],[-300,90,1],[300,90,1],[420,40,1.1],[-120,150,1.05],[120,150,1.05]];
+  ppl.forEach(([dx,dy,sc],i)=>{const k=clamp(lt*2-i*.1);const bob=3*Math.sin(t/T*TAU*4+i);person(cx+dx,cy+dy+bob,sc*k,i%3==0?"rgba(231,236,242,.85)":"rgba(127,168,207,.8)");
+    // conexão pessoa-painel
+    x.strokeStyle=`rgba(125,186,53,${.25+.25*Math.sin(t/T*TAU*3+i)})`;x.lineWidth=1.5;x.setLineDash([3,6]);x.beginPath();x.moveTo(cx+dx,cy+dy-60);x.lineTo(cx+dx*.35,cy-140);x.stroke();x.setLineDash([])});
+  x.restore();
+}
+// ---------- CENA 6: resultados ----------
+function resultsScene(t,a,lt){
+  if(a<=0)return;x.save();x.globalAlpha=a;
+  const gx=W*.14,gy=H*.78,gw=W*.72,gh=H*.5;
+  for(let i=0;i<=4;i++){x.strokeStyle="rgba(127,168,207,.15)";x.beginPath();x.moveTo(gx,gy-gh*i/4);x.lineTo(gx+gw,gy-gh*i/4);x.stroke()}
+  const prog=ease(clamp(lt*1.4));const N=60;const pts=[];for(let i=0;i<=N;i++){const u=i/N;const v=.12+.7*Math.pow(u,1.6)+.04*Math.sin(u*14);pts.push([gx+gw*u,gy-gh*v])}
+  const k=Math.floor(N*prog);
+  const g=x.createLinearGradient(0,gy-gh,0,gy);g.addColorStop(0,"rgba(125,186,53,.45)");g.addColorStop(1,"rgba(125,186,53,0)");
+  x.fillStyle=g;x.beginPath();x.moveTo(gx,gy);for(let i=0;i<=k;i++)x.lineTo(...pts[i]);x.lineTo(pts[k][0],gy);x.closePath();x.fill();
+  x.strokeStyle=GREEN;x.lineWidth=4;x.shadowColor=GREEN;x.shadowBlur=18;x.beginPath();for(let i=0;i<=k;i++)i?x.lineTo(...pts[i]):x.moveTo(...pts[i]);x.stroke();x.shadowBlur=0;
+  x.fillStyle="#E7FFD0";x.beginPath();x.arc(...pts[k],7,0,TAU);x.fill();
+  // anéis de KPI
+  [[W*.25,H*.2],[W*.5,H*.16],[W*.75,H*.2]].forEach(([px,py],i)=>{const f=clamp(lt*1.5-i*.12)*(.72+.08*i);
+    x.strokeStyle="rgba(127,168,207,.25)";x.lineWidth=10;x.beginPath();x.arc(px,py,48,0,TAU);x.stroke();
+    x.strokeStyle=i==1?CYAN:GREEN;x.lineCap="round";x.beginPath();x.arc(px,py,48,-Math.PI/2,-Math.PI/2+TAU*f);x.stroke();x.lineCap="butt"});
+  x.restore();
+}
+// partículas finas de dados (constantes, periódicas)
+const R0=rng(7);const parts=Array.from({length:70},()=>({x:R0()*W,y:R0()*H,s:.5+R0()*1.6,p:R0()}));
+function particles(t,a){x.save();parts.forEach(p=>{const y=(p.y-(t/T)*H*2*p.s+H*10)%H;x.globalAlpha=a*(.15+.25*Math.sin((t/T+p.p)*TAU*3)**2);x.fillStyle=STEEL;x.fillRect(p.x,y,1.6,1.6)});x.restore()}
+function vignette(){const g=x.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,W*.75);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(3,8,18,.7)");x.fillStyle=g;x.fillRect(0,0,W,H)}
+
+function draw(t){
+  t=((t%T)+T)%T;
+  background(t);particles(t,1);
+  // cenas: 1 complexidade 0-5 | 2 inteligência 5-10 | 3 processos 10-15 | 4 tecnologia 15-20 | 5 pessoas 20-25 | 6 resultados 25-30
+  const camT=t/T;const s=56+6*Math.sin(camT*TAU);const ox=W*.6+Math.sin(camT*TAU)*120, oy=H*.36+Math.cos(camT*TAU)*30;
+  const fA=env(t,-1.5,9.6,1.6);                    // fábrica (o wrap garante o loop 30s→0s)
+  const linkA=clamp((t-4.2)/1.6)*(t<12?1:0);
+  factory(t,fA,linkA,ox,oy,s);
+  x.save();x.translate(W*.1,0);
+  const lt3=clamp((t-9.6)/5.4);processScene(t,env(t,10.2,14.6,1.4),lt3);
+  const lt4=clamp((t-14.6)/5.4);integrationScene(t,env(t,15.2,19.6,1.4),lt4);
+  const lt5=clamp((t-19.6)/5.4);peopleScene(t,env(t,20.2,24.6,1.4),lt5);
+  const lt6=clamp((t-24.6)/4);resultsScene(t,env(t,25.2,28.6,1.4),lt6);
+  x.restore();
+  vignette();
+}
+window.draw=draw;draw(0);
+</script></body></html>
